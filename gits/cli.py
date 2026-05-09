@@ -85,8 +85,8 @@ def download_file(raw_url: str, destination: Path) -> int:
     try:
         with urllib.request.urlopen(raw_url) as response:
             destination.write_bytes(response.read())
-    except urllib.error.URLError:
-        return log_error("Download failed")
+    except urllib.error.URLError as exc:
+        return log_error(f"Download failed for {raw_url}: {exc.reason}")
     return 0
 
 
@@ -136,9 +136,10 @@ def do_download(url: str, target: str = ".") -> int:
             if rc != 0:
                 return rc
     except ValueError:
-        return log_error("Invalid GitHub URL format")
-    except subprocess.CalledProcessError:
-        return log_error("Git command failed")
+        return log_error("Invalid GitHub URL format (expected repo, /tree/<branch>/<path>, or /blob/<branch>/<path>)")
+    except subprocess.CalledProcessError as exc:
+        cmd = " ".join(str(part) for part in (exc.cmd or []))
+        return log_error(f"Git command failed: {cmd}")
     except FileNotFoundError as exc:
         return log_error(f"Missing file or command: {exc}")
 

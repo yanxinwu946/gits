@@ -135,8 +135,12 @@ def do_download(url: str, target: str = ".") -> int:
             rc = download_file(raw_url, final_path)
             if rc != 0:
                 return rc
-    except (ValueError, subprocess.CalledProcessError, FileNotFoundError):
-        return log_error("Operation failed")
+    except ValueError:
+        return log_error("Invalid GitHub URL format")
+    except subprocess.CalledProcessError:
+        return log_error("Git command failed")
+    except FileNotFoundError as exc:
+        return log_error(f"Missing file or command: {exc}")
 
     log_info(f"Saved to: {C.B}{final_path}{C.NC}")
     return 0
